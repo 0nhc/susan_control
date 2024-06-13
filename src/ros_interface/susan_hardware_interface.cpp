@@ -24,8 +24,8 @@ SusanHardwareInterface::SusanHardwareInterface(ros::NodeHandle& nh) : nh_(nh)
   non_realtime_loop_ = nh_.createTimer(update_freq, &SusanHardwareInterface::update, this);
   can_frame_subscriber_ = nh_.subscribe("received_messages", 1, &SusanHardwareInterface::CANCallback_, this);
   can_frame_publisher_ = nh_.advertise<can_msgs::Frame>("sent_messages", 1);
+  usleep(1000000); // wait 1 s for initializing ROS publishers and subscribers
   init();
-  usleep(3000000); // wait 3 s for initializing
 }
 
 SusanHardwareInterface::~SusanHardwareInterface()
@@ -55,6 +55,16 @@ void SusanHardwareInterface::init()
   registerInterface(&joint_state_interface_);
   registerInterface(&position_joint_interface_);
   registerInterface(&positionJointSaturationInterface);
+
+  // Enable DM Motors
+  for(int i=2; i<7; i++)
+  {
+    joint_command_frame_ = dm4340_protocols_.encodeEnableCommand(i+1);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "DM4340";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+  }
 }
 
 void SusanHardwareInterface::update(const ros::TimerEvent& e)
@@ -77,10 +87,17 @@ void SusanHardwareInterface::read()
 void SusanHardwareInterface::write(ros::Duration elapsed_time)
 {
     positionJointSaturationInterface.enforceLimits(elapsed_time);
-    joint_position_command_frame_ = mg6012_protocols_.encodePositionCommand(1, joint_position_command_[0]);
-    joint_position_command_frame_.header.stamp = ros::Time::now();
-    joint_position_command_frame_.header.frame_id = "right_arm_joint1";
-    can_frame_publisher_.publish(joint_position_command_frame_);
+
+    joint_command_frame_ = mg6012_protocols_.encodePositionCommand(1, joint_position_command_[0]);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "MG6012";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+
+    joint_command_frame_ = dm4340_protocols_.encodeMITCommand(3, joint_position_command_[2], 0, 100, 0.1, 0);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "DM4340";
+    can_frame_publisher_.publish(joint_command_frame_);
     usleep(1000);
 }
 

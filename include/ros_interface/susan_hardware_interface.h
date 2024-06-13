@@ -12,6 +12,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <ros/ros.h>
 #include <motor_protocols/MG6012I36.h>
+#include <motor_protocols/DM4340.h>
 #include <can_msgs/Frame.h>
 
 class SusanHardwareInterface : public hardware_interface::RobotHW
@@ -45,7 +46,8 @@ class SusanHardwareInterface : public hardware_interface::RobotHW
         boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
         MG6012I36 mg6012_protocols_;
-        can_msgs::Frame joint_position_command_frame_;
+        DM4340 dm4340_protocols_;
+        can_msgs::Frame joint_command_frame_;
         ros::Publisher can_frame_publisher_;
         ros::Subscriber can_frame_subscriber_;
         void CANCallback_(const can_msgs::Frame::ConstPtr& msg);
