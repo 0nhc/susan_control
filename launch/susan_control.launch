@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+    <rosparam file="$(find susan_control)/config/controllers.yaml" command="load"/>
+    <rosparam file="$(find susan_control)/config/joint_limits.yaml" command="load"/>
+
+    <arg name="robot_name" default="/"/>
+    <arg name="use_sim_time" default="false"/>
+    <arg name="description_name" default="robot_description"/>
+    <arg name="description_file" default="$(find susan_description)/urdf/susan_description.xacro"/>
+
+    <param name="$(arg description_name)" textfile="$(arg description_file)"/>
+    <param name="use_sim_time" value="$(arg use_sim_time)" />
+    <param name="robot_name" value="$(arg robot_name)"/>
+    
+    <group ns="$(arg robot_name)">
+        <node name="susan_hardware_interface_node" pkg="susan_control" type="susan_hardware_interface_node" output="screen">
+            <param name="loop_frequency" value="50.0"/>
+        </node>
+
+        <node name="socketcan_node" pkg="socketcan_bridge" type="socketcan_bridge_node" />
+
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
+
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find susan_description)/rviz/urdf_viewer.rviz" />
+
+        <node name="controller_manager" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+            args="
+                    joint_state_controller
+                    susan_arm_group_controller
+        "/>
+    </group>
+
+</launch>
