@@ -23,6 +23,7 @@ class DM4340
     public:
         DM4340();
         can_msgs::Frame encodeMITCommand(uint8_t motor_id, float position, float velocity, float kp, float kd, float torque);
+        can_msgs::Frame encodePositionCommand(uint8_t motor_id, float position, float velocity);
         can_msgs::Frame encodeCalibrateCommand(uint8_t motor_id);
         can_msgs::Frame encodeDisableCommand(uint8_t motor_id);
         can_msgs::Frame encodeEnableCommand(uint8_t motor_id);
@@ -30,6 +31,7 @@ class DM4340
 
     private:
         can_msgs::Frame _dm4340_mit_command;
+        can_msgs::Frame _dm4340_position_command;
         can_msgs::Frame _dm4340_calibrate_command;
         can_msgs::Frame _dm4340_disable_frame;
         can_msgs::Frame _dm4340_enable_frame;

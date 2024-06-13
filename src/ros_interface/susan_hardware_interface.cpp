@@ -1,5 +1,5 @@
 #include <ros_interface/susan_hardware_interface.h>
-
+#include <math.h>
 SusanHardwareInterface::SusanHardwareInterface(ros::NodeHandle& nh) : nh_(nh)
 {
   if(!nh_.getParam(ros::this_node::getName() + "/loop_frequency", loop_frequency_))
@@ -94,7 +94,7 @@ void SusanHardwareInterface::write(ros::Duration elapsed_time)
     can_frame_publisher_.publish(joint_command_frame_);
     usleep(1000);
 
-    joint_command_frame_ = dm4340_protocols_.encodeMITCommand(3, joint_position_command_[2], 0, 100, 0.1, 0);
+    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(3, joint_position_command_[2], M_PI);
     joint_command_frame_.header.stamp = ros::Time::now();
     joint_command_frame_.header.frame_id = "DM4340";
     can_frame_publisher_.publish(joint_command_frame_);

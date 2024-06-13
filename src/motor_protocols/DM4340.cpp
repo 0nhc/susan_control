@@ -33,6 +33,26 @@ can_msgs::Frame DM4340::encodeMITCommand(uint8_t motor_id, float position, float
     return _dm4340_mit_command;
 };
 
+can_msgs::Frame DM4340::encodePositionCommand(uint8_t motor_id, float position, float velocity)
+{
+    uint8_t *pbuf,*vbuf;
+    pbuf = (uint8_t*)&position;
+    vbuf = (uint8_t*)&velocity;
+
+    _dm4340_position_command.id = 0x100 + motor_id;
+    _dm4340_position_command.dlc = 8;
+    _dm4340_position_command.data[0] = (unsigned char)(*pbuf);
+    _dm4340_position_command.data[1] = (unsigned char)(*(pbuf+1));
+    _dm4340_position_command.data[2] = (unsigned char)(*(pbuf+2));
+    _dm4340_position_command.data[3] = (unsigned char)(*(pbuf+3));
+    _dm4340_position_command.data[4] = (unsigned char)(*vbuf);
+    _dm4340_position_command.data[5] = (unsigned char)(*(vbuf+1));
+    _dm4340_position_command.data[6] = (unsigned char)(*(vbuf+2));
+    _dm4340_position_command.data[7] = (unsigned char)(*(vbuf+3));
+
+    return _dm4340_position_command;
+}
+
 can_msgs::Frame DM4340::encodeCalibrateCommand(uint8_t motor_id)
 {
     _dm4340_calibrate_command.id = 0x000 + motor_id;
@@ -67,7 +87,7 @@ can_msgs::Frame DM4340::encodeDisableCommand(uint8_t motor_id)
 
 can_msgs::Frame DM4340::encodeEnableCommand(uint8_t motor_id)
 {
-    _dm4340_enable_frame.id = 0x000 + motor_id;
+    _dm4340_enable_frame.id = 0x100 + motor_id;
     _dm4340_enable_frame.dlc = 8;
     _dm4340_enable_frame.data[0] = 0xFF;
     _dm4340_enable_frame.data[1] = 0xFF;
