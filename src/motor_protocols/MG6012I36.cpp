@@ -10,6 +10,7 @@ can_msgs::Frame MG6012I36::encodePositionCommand(uint8_t motor_id, float positio
 {
     // 默认函数传入弧度制，先转化成角度值。
     position = position / M_PI * 180.0;
+    position = -position; // 我也不知道为什么是反过来的，可能电机固件问题
     int32_t int32_position = (int32_t)(position * 100.0 * 36.0); // 360度对应36000LSB，结合减速比36
     _mg6012_position_command.id = 0x140 + motor_id;
     _mg6012_position_command.dlc = 8;
@@ -80,6 +81,7 @@ float MG6012I36::decodePositionFrame(can_msgs::Frame frame)
     cvt16.data[1] = frame.data[7];
 
     _position_state = (float)cvt16.to_int16 / 16384.0 / 2.0 * M_PI; // 14bit编码器分辨率16384，我也不知道为啥除以2.0之后才是准确的位置
+    _position_state = -_position_state; // 我也不知道为什么是反过来的，可能电机固件问题
 
     return _position_state;
 };

@@ -7,7 +7,7 @@
 #include <utils/utils.h>
 #include <vector>
 
-#define MAX_VEL 60.0f // degrees per second.
+#define MAX_VEL 30.0f // degrees per second.
 
 class MG6012I36
 {

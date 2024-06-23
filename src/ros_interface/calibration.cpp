@@ -4,36 +4,40 @@ CALIBRATION::CALIBRATION(ros::NodeHandle *nh)
 {
     can_frame_publisher_ = nh->advertise<can_msgs::Frame>("sent_messages", 1);
     usleep(1000000); // wait 1 s for initializing
+    // Enable DM Motors
+    for(int i=2; i<7; i++)
+    {
+        dm4340_enable_frame_ = dm4340_protocols_.encodeEnableCommand(i+1);
+        dm4340_enable_frame_.header.stamp = ros::Time::now();
+        dm4340_enable_frame_.header.frame_id = "DM4340";
+        can_frame_publisher_.publish(dm4340_enable_frame_);
+        usleep(1000);
+    }
 };
 
 void CALIBRATION::calibrate()
 {
     for(int i=0; i<NUM_JOINTS; i++)
     {
-        if(i>=0 && i<3)
+        if(i>=0 && i<2)
         {
-            me8010_calibration_frames_ = me8010_protocols_.encodeCalibrateCommand(i+1);
+            mg6012_calibration_frame_ = mg6012_protocols_.encodeCalibrateCommand(i+1);
             for(int j=0; j<PUB_TIMES; j++)
             {
-                me8010_calibration_frames_[0].header.stamp = ros::Time::now();
-                me8010_calibration_frames_[0].header.frame_id = "ME8010E17B50";
-                can_frame_publisher_.publish(me8010_calibration_frames_[0]);
-                usleep(100000);
-                
-                me8010_calibration_frames_[1].header.stamp = ros::Time::now();
-                me8010_calibration_frames_[1].header.frame_id = "ME8010E17B50";
-                can_frame_publisher_.publish(me8010_calibration_frames_[1]);
+                mg6012_calibration_frame_.header.stamp = ros::Time::now();
+                mg6012_calibration_frame_.header.frame_id = "MG6012I36";
+                can_frame_publisher_.publish(mg6012_calibration_frame_);
                 usleep(100000);
             }
         }
-        else if(i>=3 && i<6)
+        else if(i>=2 && i<7)
         {
-            mg4010_calibration_frame_ = mg4010_protocols_.encodeCalibrateCommand(i+1);
+            dm4340_calibration_frame_ = dm4340_protocols_.encodeCalibrateCommand(i+1);
             for(int j=0; j<PUB_TIMES; j++)
             {
-                mg4010_calibration_frame_.header.stamp = ros::Time::now();
-                mg4010_calibration_frame_.header.frame_id = "MG4010I36";
-                can_frame_publisher_.publish(mg4010_calibration_frame_);
+                dm4340_calibration_frame_.header.stamp = ros::Time::now();
+                dm4340_calibration_frame_.header.frame_id = "DM4340";
+                can_frame_publisher_.publish(dm4340_calibration_frame_);
                 usleep(100000);
             }
         }

@@ -3,11 +3,11 @@
 
 #include "ros/ros.h"
 #include <can_msgs/Frame.h>
-#include <motor_protocols/ME8010E17B50.h>
-#include <motor_protocols/MG4010I36.h>
+#include <motor_protocols/MG6012I36.h>
+#include <motor_protocols/DM4340.h>
 #include <memory>
 
-#define NUM_JOINTS 6
+#define NUM_JOINTS 7
 #define PUB_TIMES 1
 
 class CALIBRATION
@@ -19,11 +19,12 @@ class CALIBRATION
     private:
         ros::Publisher can_frame_publisher_;
 
-        MG4010I36 mg4010_protocols_;
-        can_msgs::Frame mg4010_calibration_frame_;
+        MG6012I36 mg6012_protocols_;
+        can_msgs::Frame mg6012_calibration_frame_;
 
-        ME8010E17B50 me8010_protocols_;
-        std::vector<can_msgs::Frame> me8010_calibration_frames_;
+        DM4340 dm4340_protocols_;
+        can_msgs::Frame dm4340_calibration_frame_;
+        can_msgs::Frame dm4340_enable_frame_;
 };
 
 #endif

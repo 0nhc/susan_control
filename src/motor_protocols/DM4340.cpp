@@ -55,7 +55,7 @@ can_msgs::Frame DM4340::encodePositionCommand(uint8_t motor_id, float position, 
 
 can_msgs::Frame DM4340::encodeCalibrateCommand(uint8_t motor_id)
 {
-    _dm4340_calibrate_command.id = 0x000 + motor_id;
+    _dm4340_calibrate_command.id = 0x100 + motor_id;
     _dm4340_calibrate_command.dlc = 8;
     _dm4340_calibrate_command.data[0] = 0xFF;
     _dm4340_calibrate_command.data[1] = 0xFF;
@@ -71,7 +71,7 @@ can_msgs::Frame DM4340::encodeCalibrateCommand(uint8_t motor_id)
 
 can_msgs::Frame DM4340::encodeDisableCommand(uint8_t motor_id)
 {
-    _dm4340_disable_frame.id = 0x000 + motor_id;
+    _dm4340_disable_frame.id = 0x100 + motor_id;
     _dm4340_disable_frame.dlc = 8;
     _dm4340_disable_frame.data[0] = 0xFF;
     _dm4340_disable_frame.data[1] = 0xFF;
@@ -103,11 +103,12 @@ can_msgs::Frame DM4340::encodeEnableCommand(uint8_t motor_id)
 
 float DM4340::decodePositionFrame(can_msgs::Frame frame)
 {
-    // Convert16 cvt16;
-    // cvt16.data[0] = frame.data[6];
-    // cvt16.data[1] = frame.data[7];
+    uint16_t POS = (uint16_t)(frame.data[2] | (frame.data[1] << 8));
+    // uint16_t VEL = (uint16_t)(((frame.data[4] & 0xF0) >> 4) | (frame.data[3] << 4));
+    // uint16_t TOR = (uint16_t)(frame.data[5] | ((frame.data[4] & 0x0F) << 8));
 
-    // _position_state = (float)cvt16.to_int16 / 16384.0 / 2.0 * M_PI; // 14bit编码器分辨率16384，我也不知道为啥除以2.0之后才是准确的位置
+    _position_state = _uint_to_float(POS, POS_MIN_4340, POS_MAX_4340, 16);
+    _position_state = _pi2pi(_position_state);
 
     return _position_state;
 };

@@ -94,7 +94,31 @@ void SusanHardwareInterface::write(ros::Duration elapsed_time)
     can_frame_publisher_.publish(joint_command_frame_);
     usleep(1000);
 
-    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(3, joint_position_command_[2], M_PI);
+    joint_command_frame_ = mg6012_protocols_.encodePositionCommand(2, joint_position_command_[1]);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "MG6012";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+
+    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(3, joint_position_command_[2], M_PI/2.0);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "DM4340";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+
+    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(4, joint_position_command_[3], M_PI/2.0);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "DM4340";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+
+    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(5, joint_position_command_[4], M_PI/2.0);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "DM4340";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+
+    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(6, joint_position_command_[5], M_PI/2.0);
     joint_command_frame_.header.stamp = ros::Time::now();
     joint_command_frame_.header.frame_id = "DM4340";
     can_frame_publisher_.publish(joint_command_frame_);
@@ -106,5 +130,29 @@ void SusanHardwareInterface::CANCallback_(const can_msgs::Frame::ConstPtr& msg)
   if(msg->id == 0x141 && msg->data[0] == 0xA4)
   {
     joint_position_[0] = mg6012_protocols_.decodePositionFrame(*msg);
+  }
+  else if(msg->id == 0x142 && msg->data[0] == 0xA4)
+  {
+    joint_position_[1] = mg6012_protocols_.decodePositionFrame(*msg);
+  }
+  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x03)
+  {
+    joint_position_[2] = dm4340_protocols_.decodePositionFrame(*msg);
+  }
+  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x04)
+  {
+    joint_position_[3] = dm4340_protocols_.decodePositionFrame(*msg);
+  }
+  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x05)
+  {
+    joint_position_[4] = dm4340_protocols_.decodePositionFrame(*msg);
+  }
+  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x06)
+  {
+    joint_position_[5] = dm4340_protocols_.decodePositionFrame(*msg);
+  }
+  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x07)
+  {
+    joint_position_[6] = dm4340_protocols_.decodePositionFrame(*msg);
   }
 }

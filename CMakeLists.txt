@@ -43,9 +43,9 @@ target_link_libraries(susan_hardware_interface MG6012I36 DM4340 utils ${catkin_L
 add_executable(susan_hardware_interface_node src/ros_nodes/susan_hardware_interface_node.cpp)
 target_link_libraries(susan_hardware_interface_node MG6012I36 DM4340 utils susan_hardware_interface ${catkin_LIBRARIES})
 
-target_link_libraries(calibration ME8010E17B50 MG4010I36 ${catkin_LIBRARIES})
+target_link_libraries(calibration MG6012I36 DM4340 utils ${catkin_LIBRARIES})
 add_executable(calibration_node src/ros_nodes/calibration_node.cpp)
-target_link_libraries(calibration_node ME8010E17B50 MG4010I36 calibration ${catkin_LIBRARIES})
+target_link_libraries(calibration_node MG6012I36 DM4340 utils calibration ${catkin_LIBRARIES})
 
 install(TARGETS 
   ME8010E17B50

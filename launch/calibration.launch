@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-  <node name="calibration_node" pkg="hephaestus_hardware" type="calibration_node" output="screen" />
+  <node name="calibration_node" pkg="susan_control" type="calibration_node" output="screen" />
   <node name="socketcan_node" pkg="socketcan_bridge" type="socketcan_bridge_node" />
 </launch>
