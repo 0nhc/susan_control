@@ -7,6 +7,11 @@ SusanHardwareInterface::SusanHardwareInterface(ros::NodeHandle& nh) : nh_(nh)
     ROS_WARN("Could not find parameter '%s/loop_frequency', set to 100.0 Hz by default", ros::this_node::getName());
     loop_frequency_ = 100.0;
   }
+  if(!nh_.getParam(ros::this_node::getName() + "/hardware_type", hardware_type_))
+  {
+    ROS_WARN("Could not find parameter '%s/hardware_type', set to fake by default", ros::this_node::getName());
+    hardware_type_ = "fake";
+  }
   if(!nh_.getParam("susan_arm_group_controller/joints", joint_names_))
   {
     ROS_ERROR("Could not find parameter 'susan_arm_group_controller/joints'.");
@@ -56,15 +61,19 @@ void SusanHardwareInterface::init()
   registerInterface(&position_joint_interface_);
   registerInterface(&positionJointSaturationInterface);
 
-  // Enable DM Motors
-  for(int i=2; i<7; i++)
+  if(hardware_type_ == "real")
   {
-    joint_command_frame_ = dm4340_protocols_.encodeEnableCommand(i+1);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "DM4340";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
+    // Enable DM Motors
+    for(int i=2; i<7; i++)
+    {
+      joint_command_frame_ = dm4340_protocols_.encodeEnableCommand(i+1);
+      joint_command_frame_.header.stamp = ros::Time::now();
+      joint_command_frame_.header.frame_id = "DM4340";
+      can_frame_publisher_.publish(joint_command_frame_);
+      usleep(1000);
+    }
   }
+
 }
 
 void SusanHardwareInterface::update(const ros::TimerEvent& e)
@@ -86,6 +95,15 @@ void SusanHardwareInterface::read()
 
 void SusanHardwareInterface::write(ros::Duration elapsed_time)
 {
+  if(hardware_type_ == "fake")
+  {
+    for(int i=0; i<7; i++)
+    {
+      joint_position_[i] = joint_position_command_[i];
+    }
+  }
+  else if(hardware_type_ == "real")
+  {
     positionJointSaturationInterface.enforceLimits(elapsed_time);
 
     joint_command_frame_ = mg6012_protocols_.encodePositionCommand(1, joint_position_command_[0]);
@@ -123,36 +141,48 @@ void SusanHardwareInterface::write(ros::Duration elapsed_time)
     joint_command_frame_.header.frame_id = "DM4340";
     can_frame_publisher_.publish(joint_command_frame_);
     usleep(1000);
+
+    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(7, joint_position_command_[6], M_PI/2.0);
+    joint_command_frame_.header.stamp = ros::Time::now();
+    joint_command_frame_.header.frame_id = "DM4340";
+    can_frame_publisher_.publish(joint_command_frame_);
+    usleep(1000);
+  }
+
 }
 
 void SusanHardwareInterface::CANCallback_(const can_msgs::Frame::ConstPtr& msg)
 {
-  if(msg->id == 0x141 && msg->data[0] == 0xA4)
+  if(hardware_type_ == "real")
   {
-    joint_position_[0] = mg6012_protocols_.decodePositionFrame(*msg);
+    if(msg->id == 0x141 && msg->data[0] == 0xA4)
+    {
+      joint_position_[0] = mg6012_protocols_.decodePositionFrame(*msg);
+    }
+    else if(msg->id == 0x142 && msg->data[0] == 0xA4)
+    {
+      joint_position_[1] = mg6012_protocols_.decodePositionFrame(*msg);
+    }
+    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x03)
+    {
+      joint_position_[2] = dm4340_protocols_.decodePositionFrame(*msg);
+    }
+    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x04)
+    {
+      joint_position_[3] = dm4340_protocols_.decodePositionFrame(*msg);
+    }
+    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x05)
+    {
+      joint_position_[4] = dm4340_protocols_.decodePositionFrame(*msg);
+    }
+    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x06)
+    {
+      joint_position_[5] = dm4340_protocols_.decodePositionFrame(*msg);
+    }
+    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x07)
+    {
+      joint_position_[6] = dm4340_protocols_.decodePositionFrame(*msg);
+    }
   }
-  else if(msg->id == 0x142 && msg->data[0] == 0xA4)
-  {
-    joint_position_[1] = mg6012_protocols_.decodePositionFrame(*msg);
-  }
-  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x03)
-  {
-    joint_position_[2] = dm4340_protocols_.decodePositionFrame(*msg);
-  }
-  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x04)
-  {
-    joint_position_[3] = dm4340_protocols_.decodePositionFrame(*msg);
-  }
-  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x05)
-  {
-    joint_position_[4] = dm4340_protocols_.decodePositionFrame(*msg);
-  }
-  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x06)
-  {
-    joint_position_[5] = dm4340_protocols_.decodePositionFrame(*msg);
-  }
-  else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x07)
-  {
-    joint_position_[6] = dm4340_protocols_.decodePositionFrame(*msg);
-  }
+
 }
