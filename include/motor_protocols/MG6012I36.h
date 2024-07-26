@@ -14,6 +14,7 @@ class MG6012I36
     public:
         MG6012I36();
         can_msgs::Frame encodePositionCommand(uint8_t motor_id, float position);
+        can_msgs::Frame encodeTorqueCommand(uint8_t motor_id, float torque);
         can_msgs::Frame encodeCalibrateCommand(uint8_t motor_id);
         can_msgs::Frame encodeDisableCommand(uint8_t motor_id);
         can_msgs::Frame encodeEnableCommand(uint8_t motor_id);
@@ -21,6 +22,7 @@ class MG6012I36
 
     private:
         can_msgs::Frame _mg6012_position_command;
+        can_msgs::Frame _mg6012_torque_command;
         can_msgs::Frame _mg6012_calibrate_command;
         can_msgs::Frame _mg6012_disable_frame;
         can_msgs::Frame _mg6012_enable_frame;

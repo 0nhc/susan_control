@@ -27,16 +27,16 @@ class TorqueHardwareInterface : public hardware_interface::RobotHW
     protected:
         std::string node_name_;
         hardware_interface::JointStateInterface joint_state_interface_;
-        hardware_interface::PositionJointInterface position_joint_interface_;
+        hardware_interface::EffortJointInterface effort_joint_interface_;
 
-        joint_limits_interface::PositionJointSaturationInterface positionJointSaturationInterface;
+        joint_limits_interface::EffortJointSaturationInterface effortJointSaturationInterface;
         
         std::vector<std::string> joint_names_;
         int num_joints_;
         std::vector<double> joint_position_;
         std::vector<double> joint_velocity_;
         std::vector<double> joint_effort_;
-        std::vector<double> joint_position_command_;
+        std::vector<double> joint_effort_command_;
         
         ros::NodeHandle nh_;
         ros::Timer non_realtime_loop_;

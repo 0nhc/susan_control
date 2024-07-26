@@ -1,6 +1,6 @@
-#include <ros_interface/mg6012_hardware_interface.h>
+#include <ros_interface/torque_hardware_interface.h>
 #include <math.h>
-MG6012HardwareInterface::MG6012HardwareInterface(ros::NodeHandle& nh) : nh_(nh)
+TorqueHardwareInterface::TorqueHardwareInterface(ros::NodeHandle& nh) : nh_(nh)
 {
   if(!nh_.getParam(ros::this_node::getName() + "/loop_frequency", loop_frequency_))
   {
@@ -22,22 +22,22 @@ MG6012HardwareInterface::MG6012HardwareInterface(ros::NodeHandle& nh) : nh_(nh)
   joint_position_.resize(num_joints_, 0.0);
   joint_velocity_.resize(num_joints_, 0.0);
   joint_effort_.resize(num_joints_, 0.0);
-  joint_position_command_.resize(num_joints_, 0.0);
+  joint_effort_command_.resize(num_joints_, 0.0);
 
   controller_manager_.reset(new controller_manager::ControllerManager(this, nh_));
   ros::Duration update_freq = ros::Duration(1.0/loop_frequency_);
-  non_realtime_loop_ = nh_.createTimer(update_freq, &MG6012HardwareInterface::update, this);
-  can_frame_subscriber_ = nh_.subscribe("received_messages", 1, &MG6012HardwareInterface::CANCallback_, this);
+  non_realtime_loop_ = nh_.createTimer(update_freq, &TorqueHardwareInterface::update, this);
+  can_frame_subscriber_ = nh_.subscribe("received_messages", 1, &TorqueHardwareInterface::CANCallback_, this);
   can_frame_publisher_ = nh_.advertise<can_msgs::Frame>("sent_messages", 1);
   usleep(1000000); // wait 1 s for initializing ROS publishers and subscribers
   init();
 }
 
-MG6012HardwareInterface::~MG6012HardwareInterface()
+TorqueHardwareInterface::~TorqueHardwareInterface()
 {
 }
 
-void MG6012HardwareInterface::init()
+void TorqueHardwareInterface::init()
 {
   for(int i=0; i<num_joints_; i++)
   {
@@ -45,38 +45,38 @@ void MG6012HardwareInterface::init()
     hardware_interface::JointStateHandle jointStateHandle(joint_names_[i], &joint_position_[i], &joint_velocity_[i], &joint_effort_[i]);
     joint_state_interface_.registerHandle(jointStateHandle);
 
-    // Create position joint interface
-    hardware_interface::JointHandle jointPositionHandle(jointStateHandle, &joint_position_command_[i]);
-    position_joint_interface_.registerHandle(jointPositionHandle);
+    // Create effort joint interface
+    hardware_interface::JointHandle jointEffortHandle(jointStateHandle, &joint_effort_command_[i]);
+    effort_joint_interface_.registerHandle(jointEffortHandle);
 
     // Create Joint Limit interface   
     joint_limits_interface::JointLimits limits;
     joint_limits_interface::getJointLimits(joint_names_[i], nh_, limits);
-    joint_limits_interface::PositionJointSaturationHandle jointLimitsHandle(jointPositionHandle, limits);
-    positionJointSaturationInterface.registerHandle(jointLimitsHandle);
+    joint_limits_interface::EffortJointSaturationHandle jointLimitsHandle(jointEffortHandle, limits);
+    effortJointSaturationInterface.registerHandle(jointLimitsHandle);
   }
 
   // Register all joints interfaces    
   registerInterface(&joint_state_interface_);
-  registerInterface(&position_joint_interface_);
-  registerInterface(&positionJointSaturationInterface);
+  registerInterface(&effort_joint_interface_);
+  registerInterface(&effortJointSaturationInterface);
 
   if(hardware_type_ == "real")
   {
     // Enable DM Motors
-    for(int i=2; i<7; i++)
-    {
-      joint_command_frame_ = dm4340_protocols_.encodeEnableCommand(i+1);
-      joint_command_frame_.header.stamp = ros::Time::now();
-      joint_command_frame_.header.frame_id = "DM4340";
-      can_frame_publisher_.publish(joint_command_frame_);
-      usleep(1000);
-    }
+    // for(int i=2; i<7; i++)
+    // {
+    //   joint_command_frame_ = dm4340_protocols_.encodeEnableCommand(i+1);
+    //   joint_command_frame_.header.stamp = ros::Time::now();
+    //   joint_command_frame_.header.frame_id = "DM4340";
+    //   can_frame_publisher_.publish(joint_command_frame_);
+    //   usleep(1000);
+    // }
   }
 
 }
 
-void MG6012HardwareInterface::update(const ros::TimerEvent& e)
+void TorqueHardwareInterface::update(const ros::TimerEvent& e)
 {
   elapsed_time_ = ros::Duration(e.current_real - e.last_real);
   read();
@@ -84,7 +84,7 @@ void MG6012HardwareInterface::update(const ros::TimerEvent& e)
   write(elapsed_time_);
 }
 
-void MG6012HardwareInterface::read()
+void TorqueHardwareInterface::read()
 {
   // for(int i=0; i<num_joints_; i++)
   // {
@@ -93,7 +93,7 @@ void MG6012HardwareInterface::read()
 
 }
 
-void MG6012HardwareInterface::write(ros::Duration elapsed_time)
+void TorqueHardwareInterface::write(ros::Duration elapsed_time)
 {
   if(hardware_type_ == "fake")
   {
@@ -101,84 +101,25 @@ void MG6012HardwareInterface::write(ros::Duration elapsed_time)
   }
   else if(hardware_type_ == "real")
   {
-    positionJointSaturationInterface.enforceLimits(elapsed_time);
+    effortJointSaturationInterface.enforceLimits(elapsed_time);
 
-    joint_command_frame_ = mg6012_protocols_.encodePositionCommand(1, joint_position_command_[0]);
+    joint_command_frame_ = mg6012_protocols_.encodeTorqueCommand(1, joint_effort_command_[0]);
     joint_command_frame_.header.stamp = ros::Time::now();
     joint_command_frame_.header.frame_id = "MG6012";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
-
-    joint_command_frame_ = mg6012_protocols_.encodePositionCommand(2, joint_position_command_[1]);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "MG6012";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
-
-    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(3, joint_position_command_[2], M_PI/2.0);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "DM4340";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
-
-    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(4, joint_position_command_[3], M_PI/2.0);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "DM4340";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
-
-    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(5, joint_position_command_[4], M_PI/2.0);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "DM4340";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
-
-    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(6, joint_position_command_[5], M_PI/2.0);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "DM4340";
-    can_frame_publisher_.publish(joint_command_frame_);
-    usleep(1000);
-
-    joint_command_frame_ = dm4340_protocols_.encodePositionCommand(7, joint_position_command_[6], M_PI/2.0);
-    joint_command_frame_.header.stamp = ros::Time::now();
-    joint_command_frame_.header.frame_id = "DM4340";
     can_frame_publisher_.publish(joint_command_frame_);
     usleep(1000);
   }
 
 }
 
-void MG6012HardwareInterface::CANCallback_(const can_msgs::Frame::ConstPtr& msg)
+void TorqueHardwareInterface::CANCallback_(const can_msgs::Frame::ConstPtr& msg)
 {
   if(hardware_type_ == "real")
   {
-    if(msg->id == 0x141 && msg->data[0] == 0xA4)
+    if(msg->id == 0x141 && msg->data[0] == 0xA1)
     {
       joint_position_[0] = mg6012_protocols_.decodePositionFrame(*msg);
-    }
-    else if(msg->id == 0x142 && msg->data[0] == 0xA4)
-    {
-      joint_position_[1] = mg6012_protocols_.decodePositionFrame(*msg);
-    }
-    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x03)
-    {
-      joint_position_[2] = dm4340_protocols_.decodePositionFrame(*msg);
-    }
-    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x04)
-    {
-      joint_position_[3] = dm4340_protocols_.decodePositionFrame(*msg);
-    }
-    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x05)
-    {
-      joint_position_[4] = dm4340_protocols_.decodePositionFrame(*msg);
-    }
-    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x06)
-    {
-      joint_position_[5] = dm4340_protocols_.decodePositionFrame(*msg);
-    }
-    else if(msg->id == 0x000 && (msg->data[0]&0x0F) == 0x07)
-    {
-      joint_position_[6] = dm4340_protocols_.decodePositionFrame(*msg);
+      ROS_INFO("position: %f", joint_position_[0]);
     }
   }
 

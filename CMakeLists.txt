@@ -10,6 +10,7 @@ find_package(catkin
   controller_manager
   socketcan_bridge
   joint_trajectory_controller
+  effort_controllers
 )
 
 catkin_package(
@@ -22,6 +23,7 @@ catkin_package(
   controller_manager
   socketcan_bridge
   joint_trajectory_controller
+  effort_controllers
 )
 
 include_directories(
@@ -37,11 +39,16 @@ add_library(DM4340 src/motor_protocols/DM4340.cpp)
 add_library(utils src/utils/utils.cpp)
 add_library(pid src/utils/pid.cpp)
 add_library(susan_hardware_interface src/ros_interface/susan_hardware_interface.cpp)
+add_library(torque_hardware_interface src/ros_interface/torque_hardware_interface.cpp)
 add_library(calibration src/ros_interface/calibration.cpp)
 
 target_link_libraries(susan_hardware_interface MG6012I36 DM4340 utils ${catkin_LIBRARIES})
 add_executable(susan_hardware_interface_node src/ros_nodes/susan_hardware_interface_node.cpp)
 target_link_libraries(susan_hardware_interface_node MG6012I36 DM4340 utils susan_hardware_interface ${catkin_LIBRARIES})
+
+target_link_libraries(torque_hardware_interface MG6012I36 DM4340 utils ${catkin_LIBRARIES})
+add_executable(torque_hardware_interface_node src/ros_nodes/torque_hardware_interface_node.cpp)
+target_link_libraries(torque_hardware_interface_node MG6012I36 DM4340 utils torque_hardware_interface ${catkin_LIBRARIES})
 
 target_link_libraries(calibration MG6012I36 DM4340 utils ${catkin_LIBRARIES})
 add_executable(calibration_node src/ros_nodes/calibration_node.cpp)
@@ -52,6 +59,7 @@ install(TARGETS
   MG4005I10
   MG4010I36
   susan_hardware_interface
+  torque_hardware_interface
   calibration
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

@@ -9,9 +9,9 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
   right_arm_joint2:
     has_position_limits: true
     min_position: -3.14
@@ -22,9 +22,9 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
   right_arm_joint3:
     has_position_limits: true
     min_position: -3.14
@@ -35,9 +35,9 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
   right_arm_joint4:
     has_position_limits: true
     min_position: -3.14
@@ -48,9 +48,9 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
   right_arm_joint5:
     has_position_limits: true
     min_position: -3.14
@@ -61,9 +61,9 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
   right_arm_joint6:
     has_position_limits: true
     min_position: -3.14
@@ -74,9 +74,9 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
   right_arm_joint7:
     has_position_limits: true
     min_position: -3.14
@@ -87,6 +87,6 @@ joint_limits:
     max_acceleration: 1.57
     has_jerk_limits: false
     max_jerk: 0
-    has_effort_limits: false
-    max_effort: 0
-    min_effort: 0
+    has_effort_limits: true
+    max_effort: 30
+    min_effort: -30
