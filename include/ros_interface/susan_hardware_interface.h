@@ -44,6 +44,7 @@ class SusanHardwareInterface : public hardware_interface::RobotHW
         ros::Duration elapsed_time_;
         double loop_frequency_;
         std::string hardware_type_;
+        std::string feedback_type_;
         boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
         MG6012I36 mg6012_protocols_;

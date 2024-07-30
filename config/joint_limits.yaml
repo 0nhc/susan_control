@@ -4,9 +4,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true
@@ -17,9 +17,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true
@@ -30,9 +30,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true
@@ -43,9 +43,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true
@@ -56,9 +56,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true
@@ -69,9 +69,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true
@@ -82,9 +82,9 @@ joint_limits:
     min_position: -3.14
     max_position: 3.14
     has_velocity_limits: true
-    max_velocity: 1.57
-    has_acceleration_limits: true
-    max_acceleration: 1.57
+    max_velocity: 3.14
+    has_acceleration_limits: false
+    max_acceleration: 2.00
     has_jerk_limits: false
     max_jerk: 0
     has_effort_limits: true

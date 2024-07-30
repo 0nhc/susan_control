@@ -12,6 +12,11 @@ SusanHardwareInterface::SusanHardwareInterface(ros::NodeHandle& nh) : nh_(nh)
     ROS_WARN("Could not find parameter '%s/hardware_type', set to fake by default", ros::this_node::getName());
     hardware_type_ = "fake";
   }
+  if(!nh_.getParam(ros::this_node::getName() + "/feedback_type", feedback_type_))
+  {
+    ROS_WARN("Could not find parameter '%s/feedback_type', set to fake by default", ros::this_node::getName());
+    feedback_type_ = "fake";
+  }
   if(!nh_.getParam("susan_arm_group_controller/joints", joint_names_))
   {
     ROS_ERROR("Could not find parameter 'susan_arm_group_controller/joints'.");
@@ -27,7 +32,10 @@ SusanHardwareInterface::SusanHardwareInterface(ros::NodeHandle& nh) : nh_(nh)
   controller_manager_.reset(new controller_manager::ControllerManager(this, nh_));
   ros::Duration update_freq = ros::Duration(1.0/loop_frequency_);
   non_realtime_loop_ = nh_.createTimer(update_freq, &SusanHardwareInterface::update, this);
-  can_frame_subscriber_ = nh_.subscribe("received_messages", 1, &SusanHardwareInterface::CANCallback_, this);
+  if(feedback_type_ == "real")
+  {
+    can_frame_subscriber_ = nh_.subscribe("received_messages", 1, &SusanHardwareInterface::CANCallback_, this);
+  }
   can_frame_publisher_ = nh_.advertise<can_msgs::Frame>("sent_messages", 1);
   usleep(1000000); // wait 1 s for initializing ROS publishers and subscribers
   init();
@@ -147,6 +155,14 @@ void SusanHardwareInterface::write(ros::Duration elapsed_time)
     joint_command_frame_.header.frame_id = "DM4340";
     can_frame_publisher_.publish(joint_command_frame_);
     usleep(1000);
+
+    if(feedback_type_ == "fake")
+    {
+      for(int i=0; i<num_joints_; i++)
+      {
+        joint_position_[i] = joint_position_command_[i];
+      }
+    }
   }
 
 }
