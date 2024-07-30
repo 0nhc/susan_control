@@ -16,5 +16,6 @@
   <depend>controller_manager</depend>
   <depend>socketcan_bridge</depend>
   <depend>joint_trajectory_controller</depend>
+  <depend>position_controllers</depend>
   <depend>effort_controllers</depend>
 </package>

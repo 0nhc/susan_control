@@ -8,7 +8,7 @@
     <arg name="description_name" default="robot_description"/>
     <arg name="description_file" default="$(find susan_description)/urdf/susan_description.xacro"/>
     <arg name="hardware_type" default="fake"/> <!-- fake/real -->
-    <arg name="feedback_type" default="fake"/> <!-- fake/real -->
+    <arg name="feedback_type" default="real"/> <!-- fake/real -->
 
     <param name="$(arg description_name)" textfile="$(arg description_file)"/>
     <param name="use_sim_time" value="$(arg use_sim_time)" />
