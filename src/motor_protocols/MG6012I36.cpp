@@ -29,6 +29,7 @@ can_msgs::Frame MG6012I36::encodePositionCommand(uint8_t motor_id, float positio
 can_msgs::Frame MG6012I36::encodeTorqueCommand(uint8_t motor_id, float torque)
 {
     float current = torque / 0.175 / 36.0; // 瓴控给的MG6012i36电机扭矩常数为0.175N.M/A，外加考虑36：1的减速比
+    current = -current; // 我也不知道为什么是反过来的，可能电机固件问题
     int16_t current_buffer = (int16_t)(current * 2000.0 / 32.0); // 瓴控的CAN通信协议里给的转矩闭环控制映射，-32A~32A对应数值范围-2000~2000
     _mg6012_torque_command.id = 0x140 + motor_id;
     _mg6012_torque_command.dlc = 8;
